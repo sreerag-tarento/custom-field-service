@@ -3,29 +3,35 @@
   "type": "object",
   "properties": {
     "customFieldId": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "type": {
       "type": "string",
       "enum": ["masterList"]
     },
     "description": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "organisationId": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "isMandatory": {
       "type": "boolean"
     },
     "attributeName": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "name": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "validation": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "isEnabled": {
       "type": "boolean"
