@@ -1,6 +1,5 @@
 package com.igot.cb.transactional.cassandrautils;
 
-import com.igot.cb.transactional.cassandrautils.CassandraConfig;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

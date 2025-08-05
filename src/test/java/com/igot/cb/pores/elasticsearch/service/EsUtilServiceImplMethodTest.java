@@ -110,7 +110,7 @@ class EsUtilServiceImplMethodTest {
 
         Method method = EsUtilServiceImpl.class.getDeclaredMethod("addFacetsToSearchSourceBuilder", List.class, SearchRequest.Builder.class);
         method.setAccessible(true);
-        method.invoke(esUtilService, facets, builder);
+        assertDoesNotThrow(()-> method.invoke(esUtilService, facets, builder));
     }
 
     @Test

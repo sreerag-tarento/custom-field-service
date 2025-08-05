@@ -1,6 +1,5 @@
 package com.igot.cb.pores.exceptions;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,7 +7,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class RestExceptionHandlingTest {
@@ -26,25 +25,90 @@ class RestExceptionHandlingTest {
 
         ResponseEntity<?> response = restExceptionHandling.handleException(ex);
 
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         ErrorResponse body = (ErrorResponse) response.getBody();
         assertNotNull(body);
-        Assertions.assertEquals("ERROR", body.getCode());
-        Assertions.assertEquals("Something went wrong", body.getMessage());
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), body.getHttpStatusCode());
+        assertEquals("ERROR", body.getCode());
+        assertEquals("Something went wrong", body.getMessage());
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), body.getHttpStatusCode());
     }
 
     @Test
     void testHandleCustomException_withValidHttpStatus() {
-        CustomException ex = new CustomException("Bad request", "BAD_REQ", HttpStatus.BAD_REQUEST);
+        CustomException ex = new CustomException("BAD_REQ", "Bad request", HttpStatus.BAD_REQUEST);
 
         ResponseEntity<?> response = restExceptionHandling.handleException(ex);
 
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         ErrorResponse body = (ErrorResponse) response.getBody();
         assertNotNull(body);
-        Assertions.assertEquals("BAD_REQ", body.getMessage());
-        Assertions.assertEquals("Bad request", body.getCode());
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), body.getHttpStatusCode());
+        assertEquals("BAD_REQ", body.getCode());
+        assertEquals("Bad request", body.getMessage());
+        assertEquals(HttpStatus.BAD_REQUEST.value(), body.getHttpStatusCode());
+    }
+
+    @Test
+    void testHandleCustomException_withNullHttpStatus() {
+        CustomException ex = new CustomException("MISSING_STATUS", "Missing status", null);
+
+        assertThrows(NullPointerException.class, () -> {
+            restExceptionHandling.handleException(ex);
+        });
+    }
+
+    @Test
+    void testHandleCustomException_withEmptyMessage() {
+        CustomException ex = new CustomException("EMPTY_MSG", "", HttpStatus.BAD_REQUEST);
+
+        ResponseEntity<?> response = restExceptionHandling.handleException(ex);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        ErrorResponse body = (ErrorResponse) response.getBody();
+        assertNotNull(body);
+        assertEquals("EMPTY_MSG", body.getCode());
+        assertEquals("", body.getMessage());
+        assertEquals(HttpStatus.BAD_REQUEST.value(), body.getHttpStatusCode());
+    }
+
+    @Test
+    void testHandleCustomException_withExceptionInHttpStatus() {
+        CustomException ex = new CustomException("ILLEGAL", "Illegal status", null) {
+            @Override
+            public HttpStatus getHttpStatusCode() {
+                throw new IllegalArgumentException("Invalid HTTP status");
+            }
+        };
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            restExceptionHandling.handleException(ex);
+        });
+    }
+
+    @Test
+    void testHandleCustomException_withBlankMessage() {
+        CustomException ex = new CustomException("BLANK_MSG", "   ", HttpStatus.FORBIDDEN);
+
+        ResponseEntity<?> response = restExceptionHandling.handleException(ex);
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        ErrorResponse body = (ErrorResponse) response.getBody();
+        assertNotNull(body);
+        assertEquals("BLANK_MSG", body.getCode());
+        assertEquals("   ", body.getMessage());
+        assertEquals(HttpStatus.FORBIDDEN.value(), body.getHttpStatusCode());
+    }
+
+    @Test
+    void testHandleCustomException_withNonBlankMessage() {
+        CustomException ex = new CustomException("VALID_MSG", "Valid message", HttpStatus.UNAUTHORIZED);
+
+        ResponseEntity<?> response = restExceptionHandling.handleException(ex);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        ErrorResponse body = (ErrorResponse) response.getBody();
+        assertNotNull(body);
+        assertEquals("VALID_MSG", body.getCode());
+        assertEquals("Valid message", body.getMessage());
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), body.getHttpStatusCode());
     }
 }

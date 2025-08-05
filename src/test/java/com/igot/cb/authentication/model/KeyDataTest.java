@@ -12,17 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 class KeyDataTest {
 
     /**
-     * Tests the KeyData constructor with null inputs.
-     * This test verifies that the KeyData constructor accepts null values
-     * for both keyId and publicKey parameters without throwing any exceptions.
-     */
-    @Test
-    void testKeyDataConstructorWithNullInputs() {
-        new KeyData(null, null);
-        // No assertion needed as we're just verifying that no exception is thrown
-    }
-
-    /**
      * Tests the KeyData constructor with valid input parameters.
      * Verifies that the keyId and publicKey are correctly set.
      */
@@ -35,8 +24,8 @@ class KeyDataTest {
 
         KeyData keyData = new KeyData(keyId, publicKey);
 
-        assert keyId.equals(keyData.getKeyId());
-        assert publicKey.equals(keyData.getPublicKey());
+        assertEquals(keyId, keyData.getKeyId());
+        assertEquals(publicKey, keyData.getPublicKey());
     }
 
     /**
@@ -67,7 +56,7 @@ class KeyDataTest {
     @Test
     void test_getKeyId_returns_null() {
         KeyData keyData = new KeyData(null, null);
-        assert keyData.getKeyId() == null : "Expected null keyId";
+        assertNull(keyData.getKeyId());
     }
 
     /**
@@ -126,7 +115,7 @@ class KeyDataTest {
 
         keyData.setPublicKey(publicKey);
 
-        assert keyData.getPublicKey().equals(publicKey);
+        assertEquals(keyData.getPublicKey(), publicKey);
     }
 
 }

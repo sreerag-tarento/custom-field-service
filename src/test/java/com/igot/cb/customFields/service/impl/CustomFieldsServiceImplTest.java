@@ -1,5 +1,7 @@
 package com.igot.cb.customFields.service.impl;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -195,7 +197,7 @@ class CustomFieldsServiceImplTest {
                 Constants.CUSTOM_FIELD_ID, customFieldId
         );
 
-        when(objectMapper.convertValue(eq(jsonNode), eq(Map.class))).thenReturn(new HashMap<>(customFieldMap));
+        when(objectMapper.convertValue(jsonNode, Map.class)).thenReturn(new HashMap<>(customFieldMap));
 
         // Step 5: call method
         ApiResponse response = service.readCustomField(customFieldId, token);
@@ -303,6 +305,9 @@ class CustomFieldsServiceImplTest {
         original.put(Constants.ORGANISATION_ID, "org1");
         original.put(Constants.IS_MANDATORY, true);
         original.put(Constants.IS_ACTIVE, true);
+        original.put(Constants.CREATED_ON, new Date().getTime());
+        original.put(Constants.CREATED_BY, "jay");
+
         when(accessTokenValidator.fetchUserIdFromAccessToken("token")).thenReturn("user");
         when(customFieldRepository.findByCustomFiledIdAndIsActiveTrue("cf123"))
                 .thenReturn(Optional.of(entity));
@@ -358,7 +363,7 @@ class CustomFieldsServiceImplTest {
     }
 
     @Test
-    void testEnabledRemoveOrgFails() throws Exception {
+    void testEnabledRemoveOrgFails() {
         when(accessTokenValidator.fetchUserIdFromAccessToken("token")).thenReturn("user");
 
         CustomFieldEntity entity = new CustomFieldEntity();
@@ -398,7 +403,7 @@ class CustomFieldsServiceImplTest {
     }
 
     @Test
-    void testDeleteCustomField_NotFound() throws Exception {
+    void testDeleteCustomField_NotFound() {
         when(accessTokenValidator.fetchUserIdFromAccessToken("token")).thenReturn("user");
 
         CustomFieldEntity entity = new CustomFieldEntity();
@@ -808,7 +813,7 @@ class CustomFieldsServiceImplTest {
     }
 
     @Test
-    void testUpdateMasterList_Exception() throws Exception {
+    void testUpdateMasterList_Exception() {
         String json = """
     {
       "customFieldId": "cf1",
@@ -828,6 +833,61 @@ class CustomFieldsServiceImplTest {
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getResponseCode());
         assertEquals(Constants.SUCCESS, response.getParams().getStatus());
         assertTrue(response.getParams().getErr().contains("Failed to update master list custom field"));  // adjust message check as per your impl
+    }
+
+    @Test
+    void testUpdateMasterList_ShouldReturn_404() throws Exception {
+        String json = """
+    {
+      "customFieldId": "cf1",
+      "organizationId": "org1",
+      "customFieldData": [
+        { "attributeName": "attr1", "name": "header", "level": 1 }
+      ]
+    }
+    """;
+        String token = "valid-token";
+
+        ObjectMapper realMapper = new ObjectMapper();
+
+        JsonNode payloadNode = realMapper.readTree(json);
+        Map<String, Object> jsonMap = realMapper.convertValue(payloadNode, Map.class);
+
+        // ObjectMapper behavior
+        when(objectMapper.valueToTree(any())).thenAnswer(inv -> realMapper.valueToTree(inv.getArgument(0)));
+        when(objectMapper.readValue(json, Map.class)).thenReturn(jsonMap);
+        when(objectMapper.valueToTree(jsonMap)).thenReturn(payloadNode);
+
+        // Access token mock
+        when(accessTokenValidator.fetchUserIdFromAccessToken(token)).thenReturn("user1");
+
+        when(customFieldRepository.findByCustomFiledIdAndIsActiveTrue("cf1"))
+                .thenReturn(Optional.empty());
+
+        // Call the service
+        ApiResponse response = service.updateMasterListCustomField(multipartFile, json, token);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getResponseCode());
+        assertEquals(Constants.FAILED, response.getMessage());
+    }
+
+
+    @Test
+    void testUpdateMasterListCustomField_whenJsonParsingFails_shouldReturnErrorResponse() throws Exception {
+        // Arrange
+        String invalidJson = "{invalid_json}";
+        MockMultipartFile mockFile = new MockMultipartFile("file", "data.csv", "text/csv", "test".getBytes());
+
+        // Simulate exception when parsing JSON
+        when(objectMapper.readValue(invalidJson, Map.class)).thenThrow(new JsonProcessingException("Unexpected character") {});
+
+        // Act
+        ApiResponse response = service.updateMasterListCustomField(mockFile, invalidJson, "Bearer dummy-token");
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(Constants.FAILED, response.getMessage());
+        assertTrue(response.getParams().getErr().contains(Constants.INVALID_JSON_CUSTOM_FIELDS_MASTER_DATA));
     }
 
     @Test
@@ -855,6 +915,81 @@ class CustomFieldsServiceImplTest {
 
         assertEquals(HttpStatus.OK, response.getResponseCode());
         assertEquals(Constants.SUCCESS, response.getParams().getStatus());
+    }
+
+    @Test
+    void testUpdateCustomFieldStatus_success_1() throws Exception {
+        ObjectMapper realMapper = new ObjectMapper();
+
+        // Prepare request
+        ObjectNode requestNode = realMapper.createObjectNode();
+        requestNode.put(Constants.CUSTOM_FIELD_ID, "cf1");
+        requestNode.put(Constants.IS_ENABLED, true);
+
+        // Prepare customFieldData node
+        ObjectNode customFieldData = realMapper.createObjectNode();
+        customFieldData.put(Constants.IS_ENABLED, false);
+        customFieldData.put(Constants.ORGANIZATION_ID, "org1");
+        customFieldData.put(Constants.TYPE, "masterList");
+        customFieldData.put(Constants.LEVELS, 5);
+
+        // Prepare entity
+        CustomFieldEntity entity = new CustomFieldEntity();
+        entity.setCustomFieldData(customFieldData);
+
+        // Mock org data from Cassandra
+        String customFieldDataJson = "{\"customFieldIds\": [\"field-1\"], \"customFieldsCount\": 1}";
+        Map<String, Object> orgMap = new HashMap<>();
+        orgMap.put(Constants.CUSTOM_FIELDS_DATA, customFieldDataJson);
+        List<Map<String, Object>> orgList = new ArrayList<>();
+        orgList.add(orgMap);
+
+        // Setup mocks
+        when(cassandraOperation.getRecordsByPropertiesWithoutFiltering(
+                eq(Constants.KEYSPACE_SUNBIRD),
+                eq(Constants.ORG_TABLE),
+                anyMap(),
+                eq(Collections.singletonList(Constants.CUSTOM_FIELDS_DATA)),
+                isNull()
+        )).thenReturn(orgList);
+
+        when(cbServerProperties.getCustomFieldMaxAllowedCount()).thenReturn(10);
+        when(cbServerProperties.getCustomFieldStatusUpdateValidationFilePath()).thenReturn("validation.json");
+
+        when(accessTokenValidator.fetchUserIdFromAccessToken("token")).thenReturn("user1");
+
+        when(customFieldRepository.findByCustomFiledIdAndIsActiveTrue("cf1"))
+                .thenReturn(Optional.of(entity));
+
+        when(objectMapper.readValue(anyString(), eq(Map.class))).thenAnswer(invocation ->
+                realMapper.readValue(invocation.getArgument(0, String.class), Map.class));
+        // Act
+        ApiResponse response = service.updateCustomFieldStatus(requestNode, "token");
+
+        // Assert
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getResponseCode());
+        assertEquals(Constants.SUCCESS, response.getParams().getStatus());
+    }
+
+
+    @Test
+    void testUpdateCustomFieldStatus_Return400() {
+        ObjectMapper realMapper = new ObjectMapper();
+        ObjectNode requestNode = realMapper.createObjectNode();
+        requestNode.put(Constants.CUSTOM_FIELD_ID, "");
+        requestNode.put(Constants.IS_ENABLED, true);
+
+        ObjectNode customFieldData = realMapper.createObjectNode();
+        customFieldData.put(Constants.IS_ENABLED, false);
+        customFieldData.put(Constants.ORGANIZATION_ID, "org1");
+
+        when(cbServerProperties.getCustomFieldStatusUpdateValidationFilePath()).thenReturn("validation.json");
+        when(accessTokenValidator.fetchUserIdFromAccessToken("token")).thenReturn("user1");
+
+        ApiResponse response = service.updateCustomFieldStatus(requestNode, "token");
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getResponseCode());
+        assertEquals(Constants.FAILED, response.getMessage());
     }
 
     @Test
@@ -999,7 +1134,7 @@ class CustomFieldsServiceImplTest {
     }
 
     @Test
-    void testUpdatePopupStatus_emptyCustomFieldsData() throws Exception {
+    void testUpdatePopupStatus_emptyCustomFieldsData() {
         Map<String, Object> request = Map.of(
                 Constants.ORGANIZATION_ID, "org1",
                 Constants.IS_POPUP_ENABLED, true
@@ -1089,16 +1224,16 @@ class CustomFieldsServiceImplTest {
 
     private byte[] generateValidExcelFileBytes() throws IOException {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream();
-             Workbook workbook = new XSSFWorkbook()) {
+             Workbook workbookXSS = new XSSFWorkbook()) {
 
-            Sheet sheet = workbook.createSheet("Sheet1");
-            Row header = sheet.createRow(0);
+            Sheet sheetWorkbook = workbookXSS.createSheet("Sheet1");
+            Row header = sheetWorkbook.createRow(0);
             header.createCell(0).setCellValue("header");
 
-            Row row1 = sheet.createRow(1);
+            Row row1 = sheetWorkbook.createRow(1);
             row1.createCell(0).setCellValue("data");
 
-            workbook.write(out);
+            workbookXSS.write(out);
             return out.toByteArray();
         }
     }
@@ -1110,14 +1245,14 @@ class CustomFieldsServiceImplTest {
 
     private MultipartFile validExcelFile(int levels, String headerName) throws Exception {
         Workbook wb = new XSSFWorkbook();
-        Sheet sheet = wb.createSheet();
-        Row headerRow = sheet.createRow(0);
+        Sheet sheetWorkbook = wb.createSheet();
+        Row headerRowNew = sheetWorkbook.createRow(0);
         for (int i = 0; i < levels; i++) {
-            headerRow.createCell(i).setCellValue(headerName);
+            headerRowNew.createCell(i).setCellValue(headerName);
         }
-        Row dataRow = sheet.createRow(1);
+        Row newDataRow = sheetWorkbook.createRow(1);
         for (int i = 0; i < levels; i++) {
-            dataRow.createCell(i).setCellValue("value" + i);
+            newDataRow.createCell(i).setCellValue("value" + i);
         }
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         wb.write(bos);

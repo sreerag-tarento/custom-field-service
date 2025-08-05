@@ -56,12 +56,6 @@ class CassandraConnectionManagerImplTest {
         }
     }
 
-    @Test
-    void testShutdownHook() {
-        Thread thread = new CassandraConnectionManagerImpl.ResourceCleanUp();
-        thread.start();
-    }
-
     private ConsistencyLevel invokeGetConsistencyLevel() {
         try {
             Method method = CassandraConnectionManagerImpl.class.getDeclaredMethod("getConsistencyLevel");

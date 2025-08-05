@@ -1,6 +1,5 @@
 package com.igot.cb.pores.config;
 
-import com.igot.cb.pores.elasticsearch.dto.SearchResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +14,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
 @TestPropertySource(properties = {
@@ -44,7 +42,7 @@ class RedisConfigTest {
     void testRedisConnectionFactory() {
         RedisConnectionFactory factory = redisConfig.redisConnectionFactory();
         assertNotNull(factory);
-        assertTrue(factory instanceof LettuceConnectionFactory);
+        assertInstanceOf(LettuceConnectionFactory.class, factory);
     }
 
 

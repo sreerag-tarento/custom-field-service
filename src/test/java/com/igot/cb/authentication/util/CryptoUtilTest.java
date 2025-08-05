@@ -1,6 +1,5 @@
 package com.igot.cb.authentication.util;
 
-import com.igot.cb.authentication.util.CryptoUtil;
 import org.junit.jupiter.api.Test;
 
 import java.security.KeyPair;

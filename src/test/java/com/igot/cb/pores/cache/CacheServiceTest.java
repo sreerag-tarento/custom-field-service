@@ -1,5 +1,6 @@
 package com.igot.cb.pores.cache;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,12 +50,14 @@ class CacheServiceTest {
     }
 
     @Test
-    void testPutCache_exception() throws Exception {
-        when(objectMapper.writeValueAsString(any())).thenThrow(new RuntimeException("fail"));
+    void testPutCache_exception() throws JsonProcessingException {
+        when(objectMapper.writeValueAsString(any()))
+                .thenThrow(new RuntimeException("fail"));
 
-        // Should log and swallow the exception
-        cacheService.putCache("key", new Object());
+        assertDoesNotThrow(() -> cacheService.putCache("key", new Object()),
+                "Exception should be swallowed and not thrown");
     }
+
 
     @Test
     void testGetCache_success() {
