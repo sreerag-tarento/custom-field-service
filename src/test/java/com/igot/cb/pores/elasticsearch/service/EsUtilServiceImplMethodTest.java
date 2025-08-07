@@ -100,7 +100,8 @@ class EsUtilServiceImplMethodTest {
 
         Method method = EsUtilServiceImpl.class.getDeclaredMethod("addRequestedFieldsToSearchSourceBuilder", SearchCriteria.class, SearchRequest.Builder.class);
         method.setAccessible(true);
-        method.invoke(esUtilService, searchCriteria, builder);
+        assertDoesNotThrow(()-> method.invoke(esUtilService, searchCriteria, builder));
+
     }
 
     @Test
