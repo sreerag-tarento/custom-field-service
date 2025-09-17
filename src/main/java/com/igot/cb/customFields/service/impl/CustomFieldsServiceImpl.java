@@ -1183,48 +1183,78 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
         return str.toString();
     }
 
-    private String validateAttributeNameNotExistsInES(List<String> attributeNameList, String organizationId, String excludeCustomFieldId) {
-        SearchCriteria searchCriteria = new SearchCriteria();
-        searchCriteria.setFilterCriteriaMap(new HashMap<>());
-        searchCriteria.setRequestedFields(new ArrayList<>());
-        searchCriteria.getRequestedFields().add(Constants.CUSTOM_FIELD_FILTER_ATTRIBUTE);
-        searchCriteria.getFilterCriteriaMap().put(Constants.ORGANIZATION_ID, organizationId);
-        searchCriteria.getFilterCriteriaMap().put(Constants.CUSTOM_FIELD_FILTER_ATTRIBUTE, attributeNameList);
-        if(StringUtils.isNotBlank(excludeCustomFieldId)){
-            searchCriteria.getRequestedFields().add(Constants.CUSTOM_FIELD_ID);
-        }
+    private String validateAttributeNameNotExistsInES(
+            List<String> attributeNameList,
+            String organizationId,
+            String excludeCustomFieldId
+    ) {
+        SearchCriteria searchCriteria = buildSearchCriteria(attributeNameList, organizationId, excludeCustomFieldId);
 
         SearchResult searchResult = esUtilService.searchDocuments(
                 cbServerProperties.getCustomFieldEntity(),
                 searchCriteria,
                 cbServerProperties.getCustomFieldElasticMappingJsonPath()
         );
-        if (searchResult != null && searchResult.getData() != null && !searchResult.getData().isEmpty()) {
-            Set<String> duplicateNames = new HashSet<>();
-            for (Object dataObj : searchResult.getData()) {
-                if (dataObj instanceof Map<?, ?> dataMap) {
-                    // Skip if this is the same customFieldId as being updated
-                    Object idObj = dataMap.get(Constants.CUSTOM_FIELD_ID);
-                    if (excludeCustomFieldId != null && excludeCustomFieldId.equals(String.valueOf(idObj))) {
-                        continue;
-                    }
-                    Object originalData = dataMap.get(Constants.ORIGINAL_CUSTOM_FIELD_DATA);
-                    if (originalData instanceof List) {
-                        for (Object item : (List<?>) originalData) {
-                            if (item instanceof Map) {
-                                Object attr = ((Map<?, ?>) item).get(Constants.ATTRIBUTE_NAME);
-                                if (attr != null && attributeNameList.contains(attr.toString())) {
-                                    duplicateNames.add(attr.toString());
-                                }
-                            }
-                        }
-                    }
-                }
+
+        if (searchResult == null || searchResult.getData() == null || searchResult.getData().isEmpty()) {
+            return null;
+        }
+
+        Set<String> duplicateNames = extractDuplicateNames(searchResult, attributeNameList, excludeCustomFieldId);
+
+        return duplicateNames.isEmpty()
+                ? null
+                : "Custom field(s) with attributeName(s) '" + String.join(", ", duplicateNames) + "' already exist.";
+    }
+
+    private SearchCriteria buildSearchCriteria(List<String> attributeNameList, String organizationId, String excludeCustomFieldId) {
+        SearchCriteria searchCriteria = new SearchCriteria();
+        searchCriteria.setFilterCriteriaMap(new HashMap<>());
+        searchCriteria.setRequestedFields(new ArrayList<>());
+        searchCriteria.getRequestedFields().add(Constants.CUSTOM_FIELD_FILTER_ATTRIBUTE);
+        searchCriteria.getFilterCriteriaMap().put(Constants.ORGANIZATION_ID, organizationId);
+        searchCriteria.getFilterCriteriaMap().put(Constants.CUSTOM_FIELD_FILTER_ATTRIBUTE, attributeNameList);
+        if (StringUtils.isNotBlank(excludeCustomFieldId)) {
+            searchCriteria.getRequestedFields().add(Constants.CUSTOM_FIELD_ID);
+        }
+        return searchCriteria;
+    }
+
+    private Set<String> extractDuplicateNames(SearchResult searchResult, List<String> attributeNameList, String excludeCustomFieldId) {
+        Set<String> duplicateNames = new HashSet<>();
+
+        for (Object dataObj : searchResult.getData()) {
+            if (!(dataObj instanceof Map<?, ?> dataMap)) {
+                continue;
             }
-            if (!duplicateNames.isEmpty()) {
-                return "Custom field(s) with attributeName(s) '" + String.join(", ", duplicateNames) + "' already exist.";
+
+            if (isSameCustomFieldId(dataMap, excludeCustomFieldId)) {
+                continue;
+            }
+
+            Object originalData = dataMap.get(Constants.ORIGINAL_CUSTOM_FIELD_DATA);
+            if (originalData instanceof List) {
+                findDuplicatesInOriginalData((List<?>) originalData, attributeNameList, duplicateNames);
             }
         }
-        return null;
+        return duplicateNames;
     }
+
+    private boolean isSameCustomFieldId(Map<?, ?> dataMap, String excludeCustomFieldId) {
+        Object idObj = dataMap.get(Constants.CUSTOM_FIELD_ID);
+        return excludeCustomFieldId != null && excludeCustomFieldId.equals(String.valueOf(idObj));
+    }
+
+    private void findDuplicatesInOriginalData(List<?> originalData, List<String> attributeNameList, Set<String> duplicateNames) {
+        for (Object item : originalData) {
+            if (!(item instanceof Map<?, ?> itemMap)) {
+                continue;
+            }
+            Object attr = itemMap.get(Constants.ATTRIBUTE_NAME);
+            if (attr != null && attributeNameList.contains(attr.toString())) {
+                duplicateNames.add(attr.toString());
+            }
+        }
+    }
+
 }
