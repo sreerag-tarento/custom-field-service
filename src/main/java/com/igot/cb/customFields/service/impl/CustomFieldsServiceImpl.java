@@ -1224,17 +1224,11 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
         Set<String> duplicateNames = new HashSet<>();
 
         for (Object dataObj : searchResult.getData()) {
-            if (!(dataObj instanceof Map<?, ?> dataMap)) {
-                continue;
-            }
-
-            if (isSameCustomFieldId(dataMap, excludeCustomFieldId)) {
-                continue;
-            }
-
-            Object originalData = dataMap.get(Constants.ORIGINAL_CUSTOM_FIELD_DATA);
-            if (originalData instanceof List) {
-                findDuplicatesInOriginalData((List<?>) originalData, attributeNameList, duplicateNames);
+            if (dataObj instanceof Map<?, ?> dataMap && !isSameCustomFieldId(dataMap, excludeCustomFieldId)) {
+                Object originalData = dataMap.get(Constants.ORIGINAL_CUSTOM_FIELD_DATA);
+                if (originalData instanceof List) {
+                    findDuplicatesInOriginalData((List<?>) originalData, attributeNameList, duplicateNames);
+                }
             }
         }
         return duplicateNames;

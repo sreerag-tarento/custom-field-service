@@ -2,6 +2,7 @@ package com.igot.cb.transactional.cassandrautils;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.CqlSessionBuilder;
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 import com.igot.cb.pores.exceptions.CustomException;
 import com.igot.cb.pores.util.Constants;
@@ -116,4 +117,34 @@ class CassandraConnectionManagerImplTest {
         }
     }
 
+    @Test
+    void testGetConsistencyLevel_nullOrBlank() {
+        try (MockedStatic<PropertiesCache> staticMock = mockStatic(PropertiesCache.class)) {
+            staticMock.when(PropertiesCache::getInstance).thenReturn(propertiesCache);
+            when(propertiesCache.readProperty(Constants.SUNBIRD_CASSANDRA_CONSISTENCY_LEVEL))
+                    .thenReturn(null);
+            assertNull(invokeGetConsistencyLevel());
+            when(propertiesCache.readProperty(Constants.SUNBIRD_CASSANDRA_CONSISTENCY_LEVEL))
+                    .thenReturn("");
+            assertNull(invokeGetConsistencyLevel());
+        }
+    }
+
+    @Test
+    void testGetSession_returnsExistingSession() {
+        CassandraConnectionManagerImpl manager = mock(CassandraConnectionManagerImpl.class, CALLS_REAL_METHODS);
+        CqlSession mockSession = mock(CqlSession.class);
+        when(mockSession.isClosed()).thenReturn(false);
+        getStaticSessionMap().put("ks1", mockSession);
+        CqlSession returned = manager.getSession("ks1");
+        assertSame(mockSession, returned);
+    }
+
+    @Test
+    void testResourceCleanUp_noSessions() {
+        CassandraConnectionManagerImpl.ResourceCleanUp cleanup = new CassandraConnectionManagerImpl.ResourceCleanUp();
+        getStaticSessionMap().clear();
+        setStaticSession(null);
+        assertDoesNotThrow(cleanup::run);
+    }
 }
