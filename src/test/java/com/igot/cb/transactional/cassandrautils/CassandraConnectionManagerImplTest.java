@@ -2,7 +2,6 @@ package com.igot.cb.transactional.cassandrautils;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.CqlSessionBuilder;
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 import com.igot.cb.pores.exceptions.CustomException;
 import com.igot.cb.pores.util.Constants;
