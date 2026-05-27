@@ -119,6 +119,9 @@ public class Constants {
     public static final String CUSTOM_FIELD_UPDATE_VALIDATION_FILE_PATH = "/payloadValidation/customFieldUpdateValidation.json";
     public static final String NAME = "name";
     public static final String CUSTOM_FIELD_FILTER_ATTRIBUTE = "originalCustomFieldData.attributeName";
+    public static final String CUSTOM_FIELD_NOT_FOUND = "Custom field not found with ID: ";
+    public static final String LOCAL_DATACENTER = "datacenter1";
+
     private Constants() {
     }
 }

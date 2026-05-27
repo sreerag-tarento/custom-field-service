@@ -110,7 +110,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
 
             // Store in Redis cache
             JsonNode responseNode = objectMapper.valueToTree(customFieldMap);
-            cacheService.putCache("CUSTOM_FIELD_" + customFieldId, responseNode);
+            cacheService.putCache(Constants.CUSTOM_FIELD + customFieldId, responseNode);
 
             // Set success response
             response.setResponseCode(HttpStatus.OK);
@@ -154,7 +154,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
             Optional<CustomFieldEntity> customFieldOpt = customFieldRepository.findByCustomFiledIdAndIsActiveTrue(customFieldId);
             if (customFieldOpt.isEmpty()) {
                 response.getParams().setStatus(Constants.FAILED);
-                response.getParams().setErrMsg("Custom field not found with ID: " + customFieldId);
+                response.getParams().setErrMsg(Constants.CUSTOM_FIELD_NOT_FOUND + customFieldId);
                 response.setResponseCode(HttpStatus.NOT_FOUND);
                 return response;
             }
@@ -165,7 +165,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
             customFieldMap.put(Constants.CUSTOM_FIELD_ID, customFieldId);
 
             // Cache result for future requests
-            cacheService.putCache("CUSTOM_FIELD_" + customFieldId, customFieldMap);
+            cacheService.putCache(Constants.CUSTOM_FIELD + customFieldId, customFieldMap);
 
             response.setResponseCode(HttpStatus.OK);
             response.setMessage(Constants.SUCCESS);
@@ -272,7 +272,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
 
             // Update Redis cache
             JsonNode responseNode = objectMapper.valueToTree(customFieldMap);
-            cacheService.putCache("CUSTOM_FIELD_" + customFieldId, responseNode);
+            cacheService.putCache(Constants.CUSTOM_FIELD + customFieldId, responseNode);
             response.setResponseCode(HttpStatus.OK);
             response.setMessage(Constants.SUCCESS);
             response.setResult(customFieldMap);
@@ -299,7 +299,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
 
             Optional<CustomFieldEntity> customFieldOpt = customFieldRepository.findByCustomFiledIdAndIsActiveTrue(customFieldId);
             if (customFieldOpt.isEmpty()) {
-                ProjectUtil.returnErrorMsg("Custom field not found with ID: " + customFieldId, HttpStatus.NOT_FOUND, response, Constants.FAILED);
+                ProjectUtil.returnErrorMsg(Constants.CUSTOM_FIELD_NOT_FOUND + customFieldId, HttpStatus.NOT_FOUND, response, Constants.FAILED);
                 return response;
             }
 
@@ -345,7 +345,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
                     cbServerProperties.getCustomFieldElasticMappingJsonPath()
             );
 
-            cacheService.deleteCache("CUSTOM_FIELD_" + customFieldId);
+            cacheService.deleteCache(Constants.CUSTOM_FIELD + customFieldId);
             log.info("Cache and ES entries updated for deleted custom field: {}", customFieldId);
 
             response.setResponseCode(HttpStatus.OK);
@@ -724,7 +724,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
                     payloadNode.get(Constants.CUSTOM_FIELD_ID).asText()
             );
             if (customFieldOpt.isEmpty()) {
-                ProjectUtil.returnErrorMsg("Custom field not found with ID: " + payloadNode.get(Constants.CUSTOM_FIELD_ID).asText(), HttpStatus.NOT_FOUND, response, Constants.FAILED);
+                ProjectUtil.returnErrorMsg(Constants.CUSTOM_FIELD_NOT_FOUND + payloadNode.get(Constants.CUSTOM_FIELD_ID).asText(), HttpStatus.NOT_FOUND, response, Constants.FAILED);
                 return response;
             }
 
@@ -943,7 +943,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
 
             Optional<CustomFieldEntity> customFieldOpt = customFieldRepository.findByCustomFiledIdAndIsActiveTrue(customFieldId);
             if (customFieldOpt.isEmpty()) {
-                ProjectUtil.returnErrorMsg("Custom field not found with ID: " + customFieldId, HttpStatus.NOT_FOUND, response, Constants.FAILED);
+                ProjectUtil.returnErrorMsg(Constants.CUSTOM_FIELD_NOT_FOUND + customFieldId, HttpStatus.NOT_FOUND, response, Constants.FAILED);
                 return response;
             }
 
