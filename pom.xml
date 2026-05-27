@@ -173,7 +173,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.igot</groupId>
+            <groupId>net.karmayogibharat</groupId>
             <artifactId>common-util</artifactId>
             <version>1.0.3</version>
         </dependency>
