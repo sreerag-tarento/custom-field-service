@@ -16,7 +16,7 @@ import java.util.Map;
 @NoArgsConstructor
 public class SearchResult implements Serializable {
 
-  private List<Map<String, Object>> data;
+  private transient List<Map<String, Object>> data;
   private Map<String, List<FacetDTO>> facets;
   private long totalCount;
 }

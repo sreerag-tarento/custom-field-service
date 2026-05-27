@@ -207,7 +207,7 @@ class CustomFieldsServiceImplTest {
         assertNotNull(response.getResult());
         assertEquals(customFieldMap.get("name"), ((Map<?, ?>) response.getResult()).get("name"));
 
-        verify(cacheService).putCache(eq("CUSTOM_FIELD_" + customFieldId), any());
+        verify(cacheService).putCache(eq(Constants.CUSTOM_FIELD + customFieldId), any());
     }
 
     @Test
