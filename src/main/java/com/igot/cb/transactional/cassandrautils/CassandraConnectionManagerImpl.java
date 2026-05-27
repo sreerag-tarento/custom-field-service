@@ -9,7 +9,7 @@ import com.datastax.oss.driver.api.core.config.DriverConfigLoader;
 import com.datastax.oss.driver.api.core.metadata.Metadata;
 import com.datastax.oss.driver.api.core.metadata.Node;
 import com.datastax.oss.driver.internal.core.time.AtomicTimestampGenerator;
-import com.igot.cb.pores.exceptions.CustomException;
+import org.igot.common.CustomException;
 import com.igot.cb.pores.util.Constants;
 import com.igot.cb.pores.util.PropertiesCache;
 import org.apache.commons.lang3.StringUtils;
@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
  * <p>
  * Manages Cassandra connections and sessions.
  */
-@Component
+@Component("cbCassandraConnectionManager")
 public class CassandraConnectionManagerImpl implements CassandraConnectionManager {
     private static final Logger logger = LoggerFactory.getLogger(CassandraConnectionManagerImpl.class);
     private static final Map<String, CqlSession> cassandraSessionMap = new ConcurrentHashMap<>(2);

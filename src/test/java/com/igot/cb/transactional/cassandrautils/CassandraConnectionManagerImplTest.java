@@ -3,7 +3,7 @@ package com.igot.cb.transactional.cassandrautils;
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
-import com.igot.cb.pores.exceptions.CustomException;
+import org.igot.common.CustomException;
 import com.igot.cb.pores.util.Constants;
 import com.igot.cb.pores.util.PropertiesCache;
 import org.junit.jupiter.api.BeforeEach;

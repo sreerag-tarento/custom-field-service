@@ -1,5 +1,6 @@
 package com.igot.cb.pores.exceptions;
 
+import org.igot.common.CustomException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -1,6 +1,7 @@
 package com.igot.cb.pores.util;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.igot.common.ApiRespParam;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
