@@ -22,7 +22,7 @@ import co.elastic.clients.json.JsonData;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.igot.cb.pores.exceptions.CustomException;
+import org.igot.common.CustomException;
 import com.igot.cb.pores.util.Constants;
 import com.igot.cb.pores.elasticsearch.config.EsConfig;
 import com.igot.cb.pores.elasticsearch.dto.FacetDTO;

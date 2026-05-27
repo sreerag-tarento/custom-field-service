@@ -1,7 +1,7 @@
 package com.igot.cb.pores.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.igot.cb.pores.exceptions.CustomException;
+import org.igot.common.CustomException;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.ValidationMessage;
 import lombok.extern.slf4j.Slf4j;

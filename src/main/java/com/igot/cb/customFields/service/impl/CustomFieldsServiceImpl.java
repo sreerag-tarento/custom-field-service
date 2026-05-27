@@ -3,7 +3,7 @@ package com.igot.cb.customFields.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.igot.cb.authentication.util.AccessTokenValidator;
+import org.igot.common.auth.AccessTokenValidator;
 import com.igot.cb.customFields.entity.CustomFieldEntity;
 import com.igot.cb.customFields.repository.CustomFieldRepository;
 import com.igot.cb.customFields.service.CustomFieldsService;

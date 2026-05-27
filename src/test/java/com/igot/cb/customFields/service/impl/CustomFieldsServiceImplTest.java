@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.igot.cb.authentication.util.AccessTokenValidator;
+import org.igot.common.auth.AccessTokenValidator;
 import com.igot.cb.customFields.entity.CustomFieldEntity;
 import com.igot.cb.customFields.repository.CustomFieldRepository;
 import com.igot.cb.pores.cache.CacheService;
