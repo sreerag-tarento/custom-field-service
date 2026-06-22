@@ -119,6 +119,8 @@ public class Constants {
     public static final String CUSTOM_FIELD_UPDATE_VALIDATION_FILE_PATH = "/payloadValidation/customFieldUpdateValidation.json";
     public static final String NAME = "name";
     public static final String CUSTOM_FIELD_FILTER_ATTRIBUTE = "originalCustomFieldData.attributeName";
+    public static final String INVALID_ORGDATA_ACCESS = "User is not authorized to access the selected org Details";
+    public static final String X_AUTH_USER_ORG_ID = "x-authenticated-user-orgid";
     private Constants() {
     }
 }

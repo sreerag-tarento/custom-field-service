@@ -32,6 +32,9 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import static com.igot.cb.pores.util.Constants.UNAUTHORIZED;
+import static com.igot.cb.pores.util.ProjectUtil.returnErrorMsg;
+
 @Slf4j
 @Service
 public class CustomFieldsServiceImpl implements CustomFieldsService {
@@ -369,12 +372,22 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
     }
 
     @Override
-    public ApiResponse searchCustomFields(SearchCriteria searchCriteria) {
+    public ApiResponse searchCustomFields(SearchCriteria searchCriteria,String userOrgId,String authToken,boolean isAdmin) {
         log.info("CustomFieldsServiceImpl::searchCustomFields: Searching custom fields");
         ApiResponse response = new ApiResponse("customField.search");
-
+        String userId = accessTokenValidator.fetchUserIdFromAccessToken(authToken);
         try {
-
+            if(StringUtils.isBlank(userId)) {
+                returnErrorMsg(UNAUTHORIZED,HttpStatus.UNAUTHORIZED, response,Constants.FAILED);
+                return  response;
+            }
+            if (!isAdmin && StringUtils.isNotBlank(userOrgId)) {
+                if (searchCriteria.getFilterCriteriaMap().containsKey(Constants.ORGANISATION_ID) &&
+                        !StringUtils.equalsIgnoreCase( userOrgId,(String)searchCriteria.getFilterCriteriaMap().get(Constants.ORGANISATION_ID))) {
+                    ProjectUtil.returnErrorMsg(Constants.INVALID_ORGDATA_ACCESS, HttpStatus.UNAUTHORIZED, response, Constants.FAILED);
+                    return  response;
+                }
+            }
             // Default to active records if not specified
             if (!searchCriteria.getFilterCriteriaMap().containsKey(Constants.IS_ACTIVE)) {
                 searchCriteria.getFilterCriteriaMap().put(Constants.IS_ACTIVE, true);

@@ -6,13 +6,10 @@ import com.igot.cb.pores.elasticsearch.dto.SearchCriteria;
 import com.igot.cb.pores.util.ApiResponse;
 import com.igot.cb.pores.util.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 @RestController
@@ -53,9 +50,10 @@ public class CustomFieldsController {
     }
 
     @PostMapping("/search")
-    public ResponseEntity<ApiResponse> searchCustomFields(
-            @RequestBody SearchCriteria searchCriteria) {
-        ApiResponse response = customFieldsService.searchCustomFields(searchCriteria);
+    public ResponseEntity<ApiResponse> searchAdminCustomFields(
+            @RequestBody SearchCriteria searchCriteria, @RequestHeader(Constants.X_AUTH_TOKEN) String authToken,
+            @RequestHeader(Constants.X_AUTH_USER_ORG_ID)String userOrgId) {
+        ApiResponse response = customFieldsService.searchCustomFields(searchCriteria,userOrgId,authToken,true);
         return new ResponseEntity<>(response, response.getResponseCode());
     }
 
@@ -90,6 +88,14 @@ public class CustomFieldsController {
             @RequestBody Map<String, Object> popupStatusData,
             @RequestHeader(Constants.X_AUTH_TOKEN) String token) {
         ApiResponse response = customFieldsService.updatePopupStatus(popupStatusData, token);
+        return new ResponseEntity<>(response, response.getResponseCode());
+    }
+
+    @PostMapping("/user/search")
+    public ResponseEntity<ApiResponse> searchCustomFields(
+            @RequestBody SearchCriteria searchCriteria, @RequestHeader(Constants.X_AUTH_TOKEN) String authToken,
+            @RequestHeader(Constants.X_AUTH_USER_ORG_ID)String userOrgId) {
+        ApiResponse response = customFieldsService.searchCustomFields(searchCriteria,userOrgId,authToken,false);
         return new ResponseEntity<>(response, response.getResponseCode());
     }
 }
