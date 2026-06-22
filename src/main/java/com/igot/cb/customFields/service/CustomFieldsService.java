@@ -19,7 +19,7 @@ public interface CustomFieldsService {
 
     ApiResponse deleteCustomField(String customFieldId, String token);
 
-    ApiResponse searchCustomFields(SearchCriteria searchCriteria);
+    ApiResponse searchCustomFields(SearchCriteria searchCriteria,String orgId,String authToken,boolean isAdmin);
 
     ApiResponse uploadMasterListCustomField(MultipartFile multipartFile, String customFieldsMasterDataJson, String token);
 
