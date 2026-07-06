@@ -438,7 +438,7 @@ class CustomFieldsServiceImplTest {
         when(cbServerProperties.getCustomFieldElasticMappingJsonPath()).thenReturn("mapping.json");
 
 
-        ApiResponse response = service.searchCustomFields(criteria);
+        ApiResponse response = service.searchCustomFields(criteria,"test-org","testAuthtoken",true);
 
         assertEquals(HttpStatus.OK, response.getResponseCode());
         assertEquals(Constants.SUCCESS, response.getMessage());
@@ -455,7 +455,7 @@ class CustomFieldsServiceImplTest {
         when(cbServerProperties.getCustomFieldEntity()).thenReturn("customField");
         when(cbServerProperties.getCustomFieldElasticMappingJsonPath()).thenReturn("mapping.json");
 
-        ApiResponse response = service.searchCustomFields(criteria);
+        ApiResponse response = service.searchCustomFields(criteria,"test-org","testAuthtoken",true);
 
         assertEquals(HttpStatus.OK, response.getResponseCode());
         assertEquals(Constants.SUCCESS, response.getMessage());
@@ -473,7 +473,7 @@ class CustomFieldsServiceImplTest {
 
         when(esUtilService.searchDocuments(any(), any(), any())).thenThrow(new RuntimeException("fail"));
 
-        ApiResponse response = service.searchCustomFields(criteria);
+        ApiResponse response = service.searchCustomFields(criteria,"test-org","testAuthtoken",true);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getResponseCode());
         assertEquals(Constants.FAILED, response.getMessage());
