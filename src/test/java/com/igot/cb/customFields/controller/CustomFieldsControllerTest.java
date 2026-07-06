@@ -106,10 +106,10 @@ class CustomFieldsControllerTest {
         when(customFieldsService.searchCustomFields(any(),anyString(),anyString(),anyBoolean())).thenReturn(mockResponse);
 
         ResponseEntity<ApiResponse> responseEntity =
-                customFieldsController.searchCustomFields(criteria,"test-org","testAuthtoken");
+                customFieldsController.searchCustomFields(criteria,"testAuthtoken","test-org");
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        verify(customFieldsService).searchCustomFields(criteria,"test-org","testAuthtoken",true);
+        verify(customFieldsService).searchCustomFields(criteria,"test-org","testAuthtoken",false);
     }
 
     @Test
