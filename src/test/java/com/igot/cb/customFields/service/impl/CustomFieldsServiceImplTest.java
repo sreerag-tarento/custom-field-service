@@ -433,6 +433,7 @@ class CustomFieldsServiceImplTest {
         criteria.getFilterCriteriaMap().put(Constants.IS_ACTIVE, false);
 
         SearchResult result = new SearchResult();
+        when(accessTokenValidator.fetchUserIdFromAccessToken("testAuthtoken")).thenReturn("testUserId");
         when(esUtilService.searchDocuments(any(), any(), any())).thenReturn(result);
         when(cbServerProperties.getCustomFieldEntity()).thenReturn("customField");
         when(cbServerProperties.getCustomFieldElasticMappingJsonPath()).thenReturn("mapping.json");
@@ -451,6 +452,7 @@ class CustomFieldsServiceImplTest {
         criteria.setFilterCriteriaMap(new HashMap<>());
 
         SearchResult result = new SearchResult();
+        when(accessTokenValidator.fetchUserIdFromAccessToken("testAuthtoken")).thenReturn("testUserId");
         when(esUtilService.searchDocuments(any(), any(), any())).thenReturn(result);
         when(cbServerProperties.getCustomFieldEntity()).thenReturn("customField");
         when(cbServerProperties.getCustomFieldElasticMappingJsonPath()).thenReturn("mapping.json");
@@ -468,6 +470,7 @@ class CustomFieldsServiceImplTest {
         SearchCriteria criteria = new SearchCriteria();
         criteria.setFilterCriteriaMap(new HashMap<>());
 
+        when(accessTokenValidator.fetchUserIdFromAccessToken("testAuthtoken")).thenReturn("testUserId");
         when(cbServerProperties.getCustomFieldEntity()).thenReturn("customField");
         when(cbServerProperties.getCustomFieldElasticMappingJsonPath()).thenReturn("mapping.json");
 
