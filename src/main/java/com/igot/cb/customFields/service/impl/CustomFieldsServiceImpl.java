@@ -602,6 +602,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
             ObjectNode parentNode = null;
             String parentFieldName = null;
             String parentFieldValue = null;
+            StringBuilder pathKey = new StringBuilder();
 
             for (int j = 0; j < levels; j++) {
                 Cell valueCell = row.getCell(j);
@@ -614,7 +615,10 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
                 // Get the proper field name from the attribute name
                 String fieldName = attributeToFieldNameMap.getOrDefault(attributeName, attributeName);
 
-                String key = attributeName + ":" + value + (parentFieldName != null ? "|" + parentFieldName + ":" + parentFieldValue : "");
+                // Key must include the full ancestor path, not just the immediate parent,
+                // otherwise nodes with the same value under the same immediate parent but
+                // different grandparents get merged and attached to only one branch.
+                String key = pathKey + attributeName + ":" + value;
 
                 Map<String, ObjectNode> currentLevelMap = levelMaps.get(j);
                 ObjectNode foundNode = currentLevelMap.get(key);
@@ -638,6 +642,7 @@ public class CustomFieldsServiceImpl implements CustomFieldsService {
                 parentFieldValue = value;
                 parentNode = foundNode;
                 currentArray = (ArrayNode) foundNode.get(Constants.FIELD_VALUES);
+                pathKey.append(attributeName).append(":").append(value).append("|");
             }
         }
 
